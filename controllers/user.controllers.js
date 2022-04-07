@@ -1,4 +1,4 @@
-const User = require('../models/user')
+const { user } = require('../models/user')
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 const jwt = require('jsonwebtoken')
@@ -9,9 +9,10 @@ async function createUser(req, res) {
 
     const hash = await hashPassword(password)
 
-    const user = new User({ name, firstname, email, password: hash })
+    const usernew = user.build({ name, firstname, email, password: hash })
+    console.log(usernew)
     try {
-        await user.save()
+        await usernew.save()
         res.status(201).send({ message: "Nouvel utilisateur enregistré ! " })
     } catch (err) {
         res.status(409).send({ message: "Utilisateur pas enregistré : " + err })
@@ -19,7 +20,11 @@ async function createUser(req, res) {
 }
 
 function hashPassword(password) {
-    return bcrypt.hash(password, saltRounds)
+    if (!password) {
+        return
+    } else {
+        return bcrypt.hash(password, saltRounds)
+    }
 }
 
 async function userLog(req, res) {
@@ -31,7 +36,7 @@ async function userLog(req, res) {
         }
 
         const password = req.body.password
-        const user = await User.findOne({ email: email })
+        const userLogin = await user.findOne({ email: email })
 
         const validatePassword = await bcrypt.compare(password, user.password)
         if (!validatePassword) {

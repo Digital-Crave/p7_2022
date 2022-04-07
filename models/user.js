@@ -13,29 +13,48 @@ const user = sequelize.define('user', {
         unique: true,
     },
     name: {
+        field: 'name',
         type: DataTypes.STRING,
         allowNull: false
     },
     firstname: {
+        field: 'firstname',
         type: DataTypes.STRING,
         allowNull: false
     },
     email: {
+        field: 'email',
         type: DataTypes.STRING,
         unique: true,
         allowNull: false
     },
     password: {
+        field: 'password',
         type: DataTypes.STRING,
         allowNull: false
     },
     profil_picture: {
+        field: 'profil_picture',
         type: DataTypes.STRING,
+        defaultValue: 0
     },
     admin: {
+        field: 'admin',
         type: DataTypes.INTEGER,
         defaultValue: 0
-    }
+    },
+    created_at: {
+        field: 'created_at',
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+        field: 'updated_at',
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    timestamps: false,
 });
 
 module.exports = { user };
