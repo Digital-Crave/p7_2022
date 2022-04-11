@@ -1,7 +1,5 @@
 const sequelize = require('../config/config').sequelize;
 const { Sequelize, DataTypes } = require('sequelize');
-//const post = require('./post-models');
-//const comment = require('./comment-models');
 
 const user = sequelize.define('user', {
 
@@ -54,7 +52,6 @@ const user = sequelize.define('user', {
         type: DataTypes.DATE,
         allowNull: true,
     },
-    timestamps: false,
 });
 
 module.exports = { user };

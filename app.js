@@ -3,7 +3,9 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const helmet = require("helmet");
 const db = require('./config/config');
+const path = require('path');
 const userRouters = require('./routers/user.routers');
+const postRouters = require('./routers/post.routers');
 
 const app = express()
 
@@ -30,6 +32,9 @@ db.sequelize
         console.log('Unable to connect to the database : ', error);
     })
 
+path.join(__dirname)
+app.use("/images", express.static(path.join(__dirname, 'images')));
 app.use('/api/auth', userRouters);
+app.use('/api/posts', postRouters);
 
 module.exports = { app, express };

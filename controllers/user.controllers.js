@@ -5,15 +5,14 @@ const jwt = require('jsonwebtoken')
 
 
 async function createUser(req, res) {
+
     const { name, firstname, email, password } = req.body
 
-    const hash = await hashPassword(password)
+    const hash = hashPassword(password)
 
-    const usernew = user.build({ name, firstname, email, password: hash })
-    console.log(usernew)
     try {
-        await usernew.save()
-        res.status(201).send({ message: "Nouvel utilisateur enregistré ! " })
+        await user.create({ name, firstname, email, password: hash })
+        res.status(201).send({ message: "User has been create " })
     } catch (err) {
         res.status(409).send({ message: "Utilisateur pas enregistré : " + err })
     }
@@ -27,7 +26,7 @@ function hashPassword(password) {
     }
 }
 
-async function userLog(req, res) {
+async function userConnect(req, res) {
     try {
 
         const email = req.body.email
@@ -36,14 +35,15 @@ async function userLog(req, res) {
         }
 
         const password = req.body.password
-        const userLogin = await user.findOne({ email: email })
+        const userLogin = await user.findOne({ where: { email: email } })
 
-        const validatePassword = await bcrypt.compare(password, user.password)
+        const validatePassword = await bcrypt.compare(password, userLogin.password)
         if (!validatePassword) {
             res.status(403).send({ message: "Email ou Mot de passe incorrect ! " })
         }
+
         const token = createToken(email)
-        res.status(200).send({ userId: user?._id, token: token })
+        res.status(200).send({ userId: userLogin?._id, token: token })
     }
     catch (err) {
         console.error(err)
@@ -56,7 +56,9 @@ function createToken(email) {
     return jwt.sign({ email: email }, jwtPassword, { expiresIn: "24h" })
 }
 
-module.exports = { createUser, userLog }
+
+
+module.exports = { createUser, userConnect }
 
 //fonction modifier le profil
 
