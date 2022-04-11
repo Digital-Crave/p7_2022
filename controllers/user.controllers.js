@@ -8,21 +8,15 @@ async function createUser(req, res) {
 
     const { name, firstname, email, password } = req.body
 
-    const hash = hashPassword(password)
+    const hash = await bcrypt.hash(password, saltRounds)
+
+    const newUser = user.build({ name, firstname, email, password: hash })
 
     try {
-        await user.create({ name, firstname, email, password: hash })
-        res.status(201).send({ message: "User has been create " })
+        await newUser.save()
+        res.status(201).send({ message: "Utilisateur créé avec succès" })
     } catch (err) {
         res.status(409).send({ message: "Utilisateur pas enregistré : " + err })
-    }
-}
-
-function hashPassword(password) {
-    if (!password) {
-        return
-    } else {
-        return bcrypt.hash(password, saltRounds)
     }
 }
 
