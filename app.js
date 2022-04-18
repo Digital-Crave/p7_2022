@@ -33,8 +33,10 @@ db.sequelize
     })
 
 path.join(__dirname)
+
 app.use("/images", express.static(path.join(__dirname, 'images')));
 app.use('/api/auth', userRouters);
 app.use('/api/posts', postRouters);
+
 
 module.exports = { app, express };

@@ -3,6 +3,7 @@ require("dotenv").config({ path: "./.env" });
 
 function authenticatedUser(req, res, next) {
     const header = req.header('Authorization')
+    console.log(header);
     if (header == null) {
         return res.status(403).send({ message: "Invalid" })
     }
