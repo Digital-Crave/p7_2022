@@ -1,7 +1,14 @@
 const sequelize = require('../config/config').sequelize;
-const { Sequelize, DataTypes } = require('sequelize');
+const { Sequelize, DataTypes, UniqueConstraintError } = require('sequelize');
 
 const post = sequelize.define('post', {
+
+    id: {
+        field: 'id',
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
 
     title: {
         field: 'title',
@@ -32,12 +39,11 @@ const post = sequelize.define('post', {
     },
     user_id: {
         field: 'user_id',
-        type: DataTypes.UUID,
+        type: DataTypes.TEXT,
         allowNull: false,
-        primaryKey: true,
-    }
-},
-);
+    },
+});
+
 
 
 module.exports = { post };

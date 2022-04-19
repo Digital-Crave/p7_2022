@@ -28,7 +28,7 @@ async function createPost(req, res) {
             });
             res.status(201).send({ message: "Nouveau post enregistré ! " });
         } catch (err) {
-            res.status(409).send({ message: "Post pas enregistré : " + err + req.body.tile + req.body.content + req.body.user_id });
+            res.status(409).send({ message: "Post pas enregistré : " + err });
         }
     }
 }

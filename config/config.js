@@ -6,7 +6,7 @@ const sequelize = new Sequelize(`${process.env.database}`, `${process.env.user}`
   host: 'localhost',
   dialect: 'mysql',
   define: {
-    timestamps: false
+    timestamps: false,
   }
 });
 
