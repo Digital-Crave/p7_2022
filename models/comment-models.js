@@ -1,30 +1,19 @@
 const sequelize = require('../config/config').sequelize;
 const { Sequelize, DataTypes } = require('sequelize');
-const { comment } = require('../models/comment-models');
 
-const post = sequelize.define('post', {
+const comment = sequelize.define('comment', {
 
-    id: {
-        field: 'id',
+    post_id: {
+        field: 'post_id',
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
 
-    title: {
-        field: 'title',
-        type: DataTypes.STRING,
-        allowNull: false
-    },
     content: {
         field: 'content',
         type: DataTypes.TEXT,
         allowNull: false
-    },
-    image: {
-        field: 'image',
-        type: DataTypes.STRING,
-        allowNull: true
     },
     created_at: {
         field: 'created_at',
@@ -43,20 +32,6 @@ const post = sequelize.define('post', {
         type: DataTypes.TEXT,
         allowNull: false,
     },
-
 });
 
-post.hasMany(comment, {
-    foreignKey: 'post_id',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-});
-
-comment.belongsTo(post, {
-    foreignKey: 'post_id',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-});
-
-
-module.exports = { post };
+module.exports = { comment };

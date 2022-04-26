@@ -1,5 +1,7 @@
 const sequelize = require('../config/config').sequelize;
 const { Sequelize, DataTypes } = require('sequelize');
+const { post } = require('../models/post-models');
+const { comment } = require('../models/comment-models');
 
 const user = sequelize.define('user', {
 
@@ -52,5 +54,30 @@ const user = sequelize.define('user', {
         allowNull: true,
     },
 });
+
+user.hasMany(post, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+post.belongsTo(user, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+});
+
+user.hasMany(comment, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+comment.belongsTo(user, {
+    foreignKey: 'userId',
+    sourceKey: 'id',
+});
+
 
 module.exports = { user };

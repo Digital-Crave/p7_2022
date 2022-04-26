@@ -27,15 +27,15 @@ async function userConnect(req, res) {
         }
 
         const password = req.body.password
-        const userLogin = await user.findOne({ where: { email: email } })
+        const users = await user.findOne({ where: { email: email } })
 
-        const validatePassword = await bcrypt.compare(password, userLogin.password)
+        const validatePassword = await bcrypt.compare(password, users.password)
         if (!validatePassword) {
             res.status(403).send({ message: "Email ou Mot de passe incorrect ! " })
         }
 
-        const token = createToken(email)
-        res.status(200).send({ userId: userLogin?._id, token: token })
+        const token = createToken(users)
+        res.status(200).send({ userId: users.id, token: token })
     }
     catch (err) {
         console.error(err)
@@ -43,10 +43,11 @@ async function userConnect(req, res) {
     }
 }
 
-function createToken(email) {
+function createToken(users) {
     const jwtPassword = process.env.JWT_PASSWORD
-    return jwt.sign({ email: email }, jwtPassword, { expiresIn: "24h" })
+    return jwt.sign({ userId: users.id }, jwtPassword, { expiresIn: "24h" })
 }
+
 
 
 

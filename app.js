@@ -6,6 +6,7 @@ const db = require('./config/config');
 const path = require('path');
 const userRouters = require('./routers/user.routers');
 const postRouters = require('./routers/post.routers');
+const commentRouters = require('./routers/comment.routers');
 
 const app = express()
 
@@ -37,6 +38,7 @@ path.join(__dirname)
 app.use("/images", express.static(path.join(__dirname, 'images')));
 app.use('/api/auth', userRouters);
 app.use('/api/posts', postRouters);
+app.use('/api/comments', commentRouters);
 
 
 module.exports = { app, express };
