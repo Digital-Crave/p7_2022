@@ -34,4 +34,6 @@ const comment = sequelize.define('comment', {
     },
 });
 
+
+
 module.exports = { comment };

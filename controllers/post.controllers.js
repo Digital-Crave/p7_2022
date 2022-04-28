@@ -39,10 +39,10 @@ async function getAllPosts(req, res) {
         const posts = await post.findAll({
             include: [{
                 model: user,
-                attributes: ["firstname", "name"],
+                attributes: ["firstname", "name", "profil_picture"],
             }, {
                 model: comment,
-                attributes: ["content", "post_id", "userId"],
+                attributes: ["content", "post_id", "userId",],
             }],
             order: [["created_at", "DESC"]]
         });
@@ -61,7 +61,7 @@ async function getOnePost(req, res) {
             where: { id },
             include: [{
                 model: user,
-                attributes: ["firstname", "name"]
+                attributes: ["firstname", "name", "profil_picture"]
             }, {
                 model: comment,
                 attributes: ["content", "post_id", "userId"],

@@ -54,8 +54,6 @@ post.hasMany(comment, {
 
 comment.belongsTo(post, {
     foreignKey: 'post_id',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
 });
 
 

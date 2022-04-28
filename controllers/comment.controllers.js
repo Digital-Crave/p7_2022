@@ -38,7 +38,7 @@ async function getAllComments(req, res) {
                 attributes: ["title", "userId", "id"]
             }, {
                 model: user,
-                attributes: ["firstname", "name", "email"]
+                attributes: ["firstname", "name", "email", "profil_picture"]
             }]
         });
         res.status(200).send(comments);
@@ -54,7 +54,7 @@ async function getCommentsByPost(req, res) {
             where: { post_id },
             include: [{
                 model: user,
-                attributes: ["firstname", "name", "email"]
+                attributes: ["firstname", "name", "email", "profil_picture"]
             }, {
                 model: post,
                 attributes: ["id", "title", "userId"]
