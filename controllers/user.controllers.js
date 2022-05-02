@@ -3,6 +3,7 @@ const { post } = require('../models/post-models')
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 const jwt = require('jsonwebtoken')
+const fs = require('fs')
 
 
 async function createUser(req, res) {
@@ -73,11 +74,26 @@ async function getAllUsers(req, res) {
 }
 
 async function deleteUserAndPosts(req, res) {
+
     const id = req.params.id
+
     try {
-        await user.destroy({ where: { id: id } })
-        await post.destroy({ where: { userId: id } })
-        res.status(200).send({ message: "Utilisateur et ses posts supprimés" })
+
+        user.findOne({ where: { id: id } }).then(async (users) => {
+            if (users.profil_picture) {
+                const filename = users.profil_picture.split('/images/')[1]
+                fs.unlink(`./images/${filename}`, (err) => {
+                    user.destroy({ where: { id: id } })
+                    post.destroy({ where: { userId: id } })
+                    res.status(200).send({ message: "Utilisateur et ses posts supprimés" })
+                })
+            } else {
+                user.destroy({ where: { id: id } })
+                post.destroy({ where: { userId: id } })
+                res.status(200).send({ message: "Utilisateur et ses posts supprimés" })
+            }
+
+        })
     }
     catch (err) {
         console.error(err)
@@ -85,31 +101,93 @@ async function deleteUserAndPosts(req, res) {
     }
 }
 
-async function updateUser(req, res) {
-    try {
-        const id = req.params.id
-        const users = {
-            name: req.body.name,
-            firstname: req.body.firstname,
-            email: req.body.email,
-        }
-        if (req.file) {
-            users.profil_picture = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-        }
-        await user.update({
-            name: users.name,
-            firstname: users.firstname,
-            email: users.email,
-            profil_picture: users.profil_picture
-        }, { where: { id: id } })
-        res.status(200).send({ message: "Utilisateur modifié avec succès" })
-    }
-    catch (err) {
-        console.error(err)
-        res.status(500).send({ message: "Erreur interne du serveur" })
+
+
+function updateUser(req, res) {
+
+    if (req.file) {
+        user
+            .findOne({ where: { id: req.params.id } })
+            .then((users) => {
+                if (users.profil_picture) {
+                    const filename = users.profil_picture.split("/images/")[1];
+                    fs.unlink(`images/${filename}`, () => {
+                        const modifyUser = {
+                            name: req.body.name,
+                            firstname: req.body.firstname,
+                            email: req.body.email,
+                            profil_picture: `${req.protocol}://${req.get("host")}/images/${req.file.filename
+                                }`,
+                        };
+
+                        user
+                            .update(modifyUser, { where: { id: req.params.id } })
+
+                            .then(() =>
+                                res.status(200).json({ message: "Utilisateur modifié !" })
+                            )
+                            .catch((error) => res.status(400).json({ error }));
+                    });
+                } else {
+                    const modifyUser = {
+                        name: req.body.name,
+                        firstname: req.body.firstname,
+                        email: req.body.email,
+                        profil_picture: `${req.protocol}://${req.get("host")}/images/${req.file.filename
+                            }`,
+                    };
+
+                    user
+                        .update(modifyUser, { where: { id: req.params.id } })
+
+                        .then(() =>
+                            res.status(200).json({ message: "Utilisateur modifié !" })
+                        )
+                        .catch((error) => res.status(400).json({ error }));
+                }
+            })
+            .catch((error) => res.status(400).json({ error }));
+    } else {
+        user
+            .findOne({ where: { id: req.params.id } })
+            .then((users) => {
+                if (users.profil_picture && req.body.profil_picture === "") {
+                    const filename = users.profil_picture.split("/images/")[1];
+                    fs.unlink(`images/${filename}`, () => {
+                        const modifyUser = {
+                            name: req.body.name,
+                            firstname: req.body.firstname,
+                            email: req.body.email,
+                            profil_picture: "",
+                        };
+
+                        user
+                            .update(modifyUser, { where: { id: req.params.id } })
+
+                            .then(() =>
+                                res.status(200).json({ message: "Utilisateur modifié !" })
+                            )
+                            .catch((error) => res.status(400).json({ error }));
+                    });
+                } else {
+                    const modifyUser = {
+                        name: req.body.name,
+                        firstname: req.body.firstname,
+                        email: req.body.email,
+                    };
+
+                    user
+                        .update(modifyUser, { where: { id: req.params.id } })
+
+                        .then(() =>
+                            res.status(200).json({ message: "Utilisateur modifié !" })
+                        )
+                        .catch((error) => res.status(400).json({ error }));
+                }
+            })
+            .catch((error) => res.status(400).json({ error }));
     }
 }
-
 
 
 

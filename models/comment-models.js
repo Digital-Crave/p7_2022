@@ -3,11 +3,16 @@ const { Sequelize, DataTypes } = require('sequelize');
 
 const comment = sequelize.define('comment', {
 
+    comment_id: {
+        field: 'comment_id',
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+    },
+
     post_id: {
         field: 'post_id',
         type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
     },
 
     content: {

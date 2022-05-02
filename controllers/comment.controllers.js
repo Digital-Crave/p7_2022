@@ -3,6 +3,7 @@ const { post } = require('../models/post-models');
 const { user } = require('../models/user');
 
 async function createComment(req, res) {
+
     const { content, post_id, userId } = req.body;
     try {
         await comment.create({
@@ -12,7 +13,7 @@ async function createComment(req, res) {
         });
         res.status(201).send({ message: "Nouveau commentaire enregistré !" });
     } catch (err) {
-        res.status(409).send({ message: "Commentaire pas enregistré : " + err });
+        res.status(409).send({ message: "Commentaire pas enregistré : " + err + req.body.content + req.body.post_id + req.body.userId });
     }
 }
 
