@@ -1,10 +1,10 @@
 const { user } = require('../models/user')
 const { post } = require('../models/post-models')
+const { comment } = require('../models/comment-models')
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
-
 
 async function createUser(req, res) {
 
@@ -77,25 +77,48 @@ async function deleteUserAndPosts(req, res) {
 
     const id = req.params.id
 
+
     try {
 
-        user.findOne({ where: { id: id } }).then(async (users) => {
-            if (users.profil_picture) {
-                const filename = users.profil_picture.split('/images/')[1]
+        const posts = await post.findAll({ where: { userId: id } })
+        const users = await user.findOne({ where: { id: id } })
+
+        if (users.profil_picture && posts.image === null) {
+            const filename = users.profil_picture.split('/images/')[1]
+            fs.unlink(`./images/${filename}`, (err) => {
+                user.destroy({ where: { id: id } })
+                post.destroy({ where: { userId: id } })
+                comment.destroy({ where: { userId: id } })
+                res.status(200).send({ message: "Utilisateur et ses posts supprimés 1" })
+            })
+        } else if (posts.image && users.profil_picture === null) {
+            for (const element of posts) {
+                const filename = element.image.split('/images/')[1]
                 fs.unlink(`./images/${filename}`, (err) => {
                     user.destroy({ where: { id: id } })
                     post.destroy({ where: { userId: id } })
-                    res.status(200).send({ message: "Utilisateur et ses posts supprimés" })
+                    comment.destroy({ where: { userId: id } })
+                    res.status(200).send({ message: "Utilisateur et ses posts supprimés 2" })
                 })
-            } else {
-                user.destroy({ where: { id: id } })
-                post.destroy({ where: { userId: id } })
-                res.status(200).send({ message: "Utilisateur et ses posts supprimés" })
             }
-
-        })
-    }
-    catch (err) {
+        } else if (posts.image && users.profil_picture) {
+            const files = [posts.image + users.profil_picture]
+            for (const element of files) {
+                const filename = element.split('/images/')[1]
+                fs.unlink(`./images/${filename}`, (err) => {
+                    user.destroy({ where: { id: id } })
+                    post.destroy({ where: { userId: id } })
+                    comment.destroy({ where: { userId: id } })
+                    res.status(200).send({ message: "Utilisateur et ses posts supprimés 3" })
+                })
+            }
+        } else {
+            user.destroy({ where: { id: id } })
+            post.destroy({ where: { userId: id } })
+            comment.destroy({ where: { userId: id } })
+            res.status(200).send({ message: "Utilisateur et ses posts supprimés 4" })
+        }
+    } catch (err) {
         console.error(err)
         res.status(500).send({ message: "Erreur interne du serveur" })
     }
@@ -188,6 +211,7 @@ function updateUser(req, res) {
             .catch((error) => res.status(400).json({ error }));
     }
 }
+
 
 
 
