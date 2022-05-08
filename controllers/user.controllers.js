@@ -1,89 +1,89 @@
-const { user } = require('../models/user')
-const { post } = require('../models/post-models')
-const { comment } = require('../models/comment-models')
-const bcrypt = require('bcrypt')
-const saltRounds = 10
-const jwt = require('jsonwebtoken')
-const fs = require('fs')
+const { user } = require("../models/user");
+const { post } = require("../models/post-models");
+const { comment } = require("../models/comment-models");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
 
 async function createUser(req, res) {
+    const { name, firstname, email, password, profil_picture, admin } = req.body;
 
-    const { name, firstname, email, password, profil_picture } = req.body
-
-    const hash = await bcrypt.hash(password, saltRounds)
+    const hash = await bcrypt.hash(password, saltRounds);
 
     try {
-        await user.create({ name, firstname, email, password: hash, profil_picture })
-        res.status(201).send({ message: "Utilisateur créé avec succès" })
+        await user.create({
+            name,
+            firstname,
+            email,
+            password: hash,
+            profil_picture,
+            admin
+        });
+        res.status(201).send({ message: "Utilisateur créé avec succès" });
     } catch (err) {
-        res.status(409).send({ message: "Utilisateur pas enregistré : " + err })
+        res.status(409).send({ message: "Utilisateur pas enregistré : " + err });
     }
 }
 
 async function userConnect(req, res) {
     try {
-
-        const email = req.body.email
+        const email = req.body.email;
         if (!email) {
-            res.status(403).send({ message: "Email ou Mot de passe incorrect ! " })
+            res.status(403).send({ message: "Email ou Mot de passe incorrect ! " });
         }
 
-        const password = req.body.password
-        const users = await user.findOne({ where: { email: email } })
+        const password = req.body.password;
+        const users = await user.findOne({ where: { email: email } });
 
-        const validatePassword = await bcrypt.compare(password, users.password)
+        const validatePassword = await bcrypt.compare(password, users.password);
         if (!validatePassword) {
-            res.status(403).send({ message: "Email ou Mot de passe incorrect ! " })
+            res.status(403).send({ message: "Email ou Mot de passe incorrect ! " });
         }
 
-        const token = createToken(users)
-        res.status(200).send({ userId: users.id, token: token })
-    }
-    catch (err) {
-        console.error(err)
-        res.status(500).send({ message: "Erreur interne du serveur" })
+        const token = createToken(users);
+        res.status(200).send({ userId: users.id, token: token, admin: users.admin });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "Erreur interne du serveur" });
     }
 }
 
 function createToken(users) {
-    const jwtPassword = process.env.JWT_PASSWORD
-    return jwt.sign({ userId: users.id }, jwtPassword, { expiresIn: "24h" })
+    const jwtPassword = process.env.JWT_PASSWORD;
+    return jwt.sign({ userId: users.id, admin: users.admin }, jwtPassword, { expiresIn: "24h" });
 }
 
 async function getOneUser(req, res) {
-    const id = req.params.id
+    const id = req.params.id;
     try {
-        const users = await user.findOne({ where: { id: id } })
-        res.status(200).send(users)
-    }
-    catch (err) {
-        console.error(err)
-        res.status(500).send({ message: "Erreur interne du serveur" })
+        const users = await user.findOne({ where: { id: id } });
+        res.status(200).send(users);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "Erreur interne du serveur" });
     }
 }
 
 async function getAllUsers(req, res) {
     try {
-        const users = await user.findAll()
-        res.status(200).send(users)
-    }
-    catch (err) {
-        console.error(err)
-        res.status(500).send({ message: "Erreur interne du serveur" })
+        const users = await user.findAll();
+        res.status(200).send(users);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "Erreur interne du serveur" });
     }
 }
 
 async function deleteUserAndPosts(req, res) {
-
-    const id = req.params.id
-
+    const id = req.params.id;
 
     try {
 
-        const posts = await post.findAll({ where: { userId: id } })
-        const users = await user.findOne({ where: { id: id } })
+        const posts = await post.findAll({ where: { userId: id } });
+        const users = await user.findOne({ where: { id: id } });
 
-        if (users.profil_picture && posts.image === null) {
+        if (users.profil_picture) {
             const filename = users.profil_picture.split('/images/')[1]
             fs.unlink(`./images/${filename}`, (err) => {
                 user.destroy({ where: { id: id } })
@@ -91,7 +91,7 @@ async function deleteUserAndPosts(req, res) {
                 comment.destroy({ where: { userId: id } })
                 res.status(200).send({ message: "Utilisateur et ses posts supprimés 1" })
             })
-        } else if (posts.image && users.profil_picture === null) {
+        } else if (posts.image) {
             for (const element of posts) {
                 const filename = element.image.split('/images/')[1]
                 fs.unlink(`./images/${filename}`, (err) => {
@@ -101,33 +101,25 @@ async function deleteUserAndPosts(req, res) {
                     res.status(200).send({ message: "Utilisateur et ses posts supprimés 2" })
                 })
             }
-        } else if (posts.image && users.profil_picture) {
-            const files = [posts.image + users.profil_picture]
-            for (const element of files) {
-                const filename = element.split('/images/')[1]
-                fs.unlink(`./images/${filename}`, (err) => {
-                    user.destroy({ where: { id: id } })
-                    post.destroy({ where: { userId: id } })
-                    comment.destroy({ where: { userId: id } })
-                    res.status(200).send({ message: "Utilisateur et ses posts supprimés 3" })
-                })
-            }
         } else {
             user.destroy({ where: { id: id } })
             post.destroy({ where: { userId: id } })
             comment.destroy({ where: { userId: id } })
             res.status(200).send({ message: "Utilisateur et ses posts supprimés 4" })
         }
+
     } catch (err) {
-        console.error(err)
-        res.status(500).send({ message: "Erreur interne du serveur" })
+        console.error(err);
+        res.status(500).send({ message: "Erreur interne du serveur" });
     }
+
+
+
 }
 
 
 
 function updateUser(req, res) {
-
     if (req.file) {
         user
             .findOne({ where: { id: req.params.id } })
@@ -212,8 +204,4 @@ function updateUser(req, res) {
     }
 }
 
-
-
-
-
-module.exports = { createUser, userConnect, getOneUser, getAllUsers, deleteUserAndPosts, updateUser }
+module.exports = { createUser, userConnect, getOneUser, getAllUsers, deleteUserAndPosts, updateUser };
