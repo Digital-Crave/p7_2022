@@ -81,33 +81,24 @@ async function deleteUserAndPosts(req, res) {
     try {
 
         const posts = await post.findAll({ where: { userId: id } });
-        const users = await user.findOne({ where: { id: id } });
+        const userResponse = await user.findOne({ where: { id: id } });
 
-        if (users.profil_picture) {
-            const filename = users.profil_picture.split('/images/')[1]
-            fs.unlink(`./images/${filename}`, (err) => {
-                user.destroy({ where: { id: id } })
-                post.destroy({ where: { userId: id } })
-                comment.destroy({ where: { userId: id } })
-                res.status(200).send({ message: "Utilisateur et ses posts supprimés 1" })
-            })
-        } else if (posts.image) {
-            for (const element of posts) {
+        comment.destroy({ where: { userId: id } });
+
+        for (const element of posts) {
+            if (element.image) {
                 const filename = element.image.split('/images/')[1]
-                fs.unlink(`./images/${filename}`, (err) => {
-                    user.destroy({ where: { id: id } })
-                    post.destroy({ where: { userId: id } })
-                    comment.destroy({ where: { userId: id } })
-                    res.status(200).send({ message: "Utilisateur et ses posts supprimés 2" })
-                })
+                fs.unlink(`./images/${filename}`, () => { });
             }
-        } else {
-            user.destroy({ where: { id: id } })
-            post.destroy({ where: { userId: id } })
-            comment.destroy({ where: { userId: id } })
-            res.status(200).send({ message: "Utilisateur et ses posts supprimés 4" })
+            post.destroy({ where: { userId: id } });
         }
 
+        if (userResponse.profil_picture) {
+            const filename = userResponse.profil_picture.split('/images/')[1]
+            fs.unlink(`./images/${filename}`, () => { });
+        }
+        user.destroy({ where: { id: id } });
+        res.status(200).send({ message: "Utilisateur supprimé avec succès" });
     } catch (err) {
         console.error(err);
         res.status(500).send({ message: "Erreur interne du serveur" });
@@ -116,8 +107,6 @@ async function deleteUserAndPosts(req, res) {
 
 
 }
-
-
 
 function updateUser(req, res) {
     if (req.file) {

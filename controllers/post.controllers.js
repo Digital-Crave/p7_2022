@@ -91,16 +91,19 @@ async function getPostsByUser(req, res) {
     }
 }
 
-function deletePost(req, res) {
+async function deletePost(req, res) {
 
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_PASSWORD);
     const admin = decoded.admin;
 
-    post.findOne({ where: { id: req.params.id } }).then((posts) => {
+    const postResponse = await post.findOne({ where: { id: req.params.id } });
+
+    try {
+
         if (admin === 1) {
-            if (posts.image) {
-                const filename = posts.image.split("/images/")[1];
+            if (postResponse.image) {
+                const filename = postResponse.image.split("/images/")[1];
                 fs.unlink(`images/${filename}`, () => {
                     post.destroy({
                         where: { id: req.params.id },
@@ -111,12 +114,15 @@ function deletePost(req, res) {
                 post.destroy({
                     where: { id: req.params.id },
                 });
-                res.status(401).send({ message: "Post supprimé ! " });
+                console.log(req.params.id)
+                res.status(200).send({ message: "Post supprimé ! " });
             }
         } else {
             res.status(401).send({ message: "Vous n'avez pas les droits pour supprimer ce post" });
         }
-    });
+    } catch (err) {
+        res.status(500).send({ message: "Erreur lors de la suppression du post : " + err });
+    }
 }
 
 

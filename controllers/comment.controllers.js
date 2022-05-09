@@ -1,6 +1,8 @@
 const { comment } = require('../models/comment-models');
 const { post } = require('../models/post-models');
 const { user } = require('../models/user');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 async function createComment(req, res) {
 
@@ -18,14 +20,21 @@ async function createComment(req, res) {
 }
 
 async function deleteComment(req, res) {
-    const { post_id } = req.params;
+
+    const token = req.headers.authorization.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_PASSWORD);
+    const admin = decoded.admin;
+
+    const { comment_id } = req.params;
+
     try {
-        await comment.destroy({
-            where: {
-                post_id
-            }
-        });
-        res.status(200).send({ message: "Commentaire supprimé !" });
+
+        if (admin === 1) {
+            await comment.destroy({ where: { comment_id } });
+            res.status(200).send({ message: "Commentaire supprimé !" });
+        } else {
+            res.status(401).send({ message: "Vous n'avez pas le droit de supprimer ce commentaire !" });
+        }
     } catch (err) {
         res.status(409).send({ message: "Commentaire pas supprimé : " + err });
     }

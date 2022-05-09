@@ -8,7 +8,7 @@ router.use(authenticatedUser);
 
 router.post('/', commentCtrl.createComment);
 
-router.delete('/:post_id', commentCtrl.deleteComment);
+router.delete('/:comment_id', commentCtrl.deleteComment);
 
 router.get('/', commentCtrl.getAllComments);
 
